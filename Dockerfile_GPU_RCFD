@@ -1,21 +1,20 @@
 FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu16.04
- 
+  
 MAINTAINER priyanka dilip <priyankadilip7@gmail.com>
- 
+
 RUN apt-get update
- 
+
 # Getting RapidCFD
- 
+
 RUN apt-get install -y build-essential cmake flex bison zlib1g-dev qt4-dev-tools libqt4-dev libqtwebkit-dev gnuplot \
 libreadline-dev libncurses5-dev libxt-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-thread-dev libgmp-dev \
 libmpfr-dev python python-dev libcgal-dev
- 
-RUN apt-get install libglu1-mesa-dev libqt4-opengl-dev
-RUN cd ~
-    mkdir RapidCFD
-    cd RapidCFD
-    git clone https://github.com/Atizar/RapidCFD-dev.git
- 
-RUN cd RapidCFD-dev
-   ./Allwmake
 
+RUN apt-get install libglu1-mesa-dev libqt4-opengl-dev
+RUN cd ~ & \
+    mkdir RapidCFD && \
+    cd RapidCFD && \
+    git clone https://github.com/Atizar/RapidCFD-dev.git
+
+RUN cd RapidCFD-dev && \
+   ./Allwmake
