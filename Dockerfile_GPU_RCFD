@@ -11,12 +11,21 @@ libreadline-dev libncurses5-dev libxt-dev libopenmpi-dev openmpi-bin libboost-sy
 libmpfr-dev python python-dev libcgal-dev git
  
 RUN apt-get install libglu1-mesa-dev libqt4-opengl-dev
-RUN cd ~ & \
-    mkdir RapidCFD && \
-    cd RapidCFD && \
+RUN cd ~
+WORKDIR RapidCFD && \
+#   cd RapidCFD && \
     git clone https://github.com/Atizar/RapidCFD-dev.git && \
-    echo "alias rapidcfd='source \$HOME/RapidCFD/RapidCFD-dev/etc/bashrc'" >> $HOME/.bashrc && \
-    ["/bin/bash", "-c", "rapidcfd"] && \
-    echo $WM_PROJECT_DIR && \
     cd RapidCFD-dev && \
+    echo "alias rapidcfd = 'source $HOME/RapidCFD/RapidCFD-dev/etc/bashrc'" >> $HOME/.bashrc && \
+#   which bash && \
+# cat $HOME/.bashrc && \
+# ["/bin/bash", "-c", "rapidcfd"] && \
+    echo -e '#!/bin/bash\nsource /root/RapidCFD/RapidCFD-dev/etc/bashrc' > /usr/bin/rcfd && \
+    chmod +x /usr/bin/rcfd && \
+# ENV $WM_PROJECT   
+    echo $WM_PROJECT_DIR && \
+    pwd && \
+    cd $HOME && \
+    ls && \
+    cd $HOME/RapidCFD && \
    ./Allwmake
