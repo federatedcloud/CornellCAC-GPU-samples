@@ -2,30 +2,23 @@ FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu16.04
  
 MAINTAINER priyanka dilip <priyankadilip7@gmail.com>
  
+USER root
 RUN apt-get update
- 
-# Getting RapidCFD
- 
 RUN apt-get install -y build-essential cmake flex bison zlib1g-dev qt4-dev-tools libqt4-dev libqtwebkit-dev gnuplot \
 libreadline-dev libncurses5-dev libxt-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-thread-dev libgmp-dev \
 libmpfr-dev python python-dev libcgal-dev git
  
-RUN apt-get install libglu1-mesa-dev libqt4-opengl-dev
-RUN cd ~
-WORKDIR RapidCFD && \
-#   cd RapidCFD && \
-    git clone https://github.com/Atizar/RapidCFD-dev.git && \
-    cd RapidCFD-dev && \
-    echo "alias rapidcfd = 'source $HOME/RapidCFD/RapidCFD-dev/etc/bashrc'" >> $HOME/.bashrc && \
-#   which bash && \
-# cat $HOME/.bashrc && \
-# ["/bin/bash", "-c", "rapidcfd"] && \
-    echo -e '#!/bin/bash\nsource /root/RapidCFD/RapidCFD-dev/etc/bashrc' > /usr/bin/rcfd && \
+RUN apt-get install -y libglu1-mesa-dev libqt4-opengl-dev
+WORKDIR /root/RapidCFD
+RUN git clone https://github.com/Atizar/RapidCFD-dev.git
+RUN echo "alias rapidcfd = 'source $HOME/RapidCFD/RapidCFD-dev/etc/bashrc'" >> $HOME/.bashrc
+RUN cat $HOME/.bashrc
+RUN ls -l /root/RapidCFD/RapidCFD-dev/etc && \
+    cat $HOME/RapidCFD/RapidCFD-dev/etc/bashrc
+RUN echo "#!/bin/bash\nsource /root/RapidCFD/RapidCFD-dev/etc/bashrc" > /usr/bin/rcfd && \
     chmod +x /usr/bin/rcfd && \
-# ENV $WM_PROJECT   
-    echo $WM_PROJECT_DIR && \
-    pwd && \
-    cd $HOME && \
-    ls && \
-    cd $HOME/RapidCFD && \
-   ./Allwmake
+    cat /usr/bin/rcfd && \
+    env && \
+    echo "After first source ------" 
+COPY rcfd_compile.sh /
+RUN chmod +x /rcfd_compile.sh && /rcfd_compile.sh
