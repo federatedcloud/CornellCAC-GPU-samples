@@ -1,33 +1,31 @@
 FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu16.04
- 
+
 MAINTAINER priyanka dilip <priyankadilip7@gmail.com>
- 
+
 RUN apt-get update  && \
- 
+
 # Getting OpenFOAM 2.3.1
 # https://openfoamwiki.net/index.php/Installation/Linux/OpenFOAM-2.3.1/Ubuntu#Ubuntu_16.04
-    apt-get install -y build-essential wget cmake flex bison zlib1g-dev qt4-dev-tools libqt4-dev libqtwebkit-dev gnuplot \
+RUN apt-get install -y build-essential wget cmake flex bison zlib1g-dev qt4-dev-tools libqt4-dev libqtwebkit-dev gnuplot \
 libreadline-dev libncurses5-dev libxt-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-thread-dev libgmp-dev \
-libmpfr-dev python python-dev libcgal-dev  && \
- 
- 
-    apt-get install libglu1-mesa-dev libqt4-opengl-dev  && \
-    cd ~  && \
-    mkdir OpenFOAM  && \
-    cd OpenFOAM  && \
-    wget "http://downloads.sourceforge.net/foam/OpenFOAM-2.3.1.tgz?use_mirror=mesh" -O OpenFOAM-2.3.1.tgz && \
+libmpfr-dev python python-dev libcgal-dev
+RUN apt-get install libglu1-mesa-dev libqt4-opengl-dev  && \
+WORKDIR /root/OpenFOAM
+RUN wget "http://downloads.sourceforge.net/foam/OpenFOAM-2.3.1.tgz?use_mirror=mesh" -O OpenFOAM-2.3.1.tgz && \
     wget "http://downloads.sourceforge.net/foam/ThirdParty-2.3.1.tgz?use_mirror=mesh" -O ThirdParty-2.3.1.tgz  && \
     tar -xzf OpenFOAM-2.3.1.tgz && \
     tar -xzf ThirdParty-2.3.1.tgz
 # not doing OpenMPI symbolic links
-RUN sed -i -e 's/\(cgal_version=\)CGAL-4.3/\1cgal-system/' OpenFOAM-2.3.1/etc/config/CGAL.sh && \
-#RUN $HOME/OpenFOAM/OpenFOAM-2.3.1/etc/bashrc WM_NCOMPPROCS=4 WM_MPLIB=SYSTEMOPENMPI
+RUN sed -i -e 's/\(cgal_version=\)CGAL-4.3/\1cgal-system/' OpenFOAM-2.3.1/etc/config/CGAL.sh 
+# RUN $HOME/OpenFOAM/OpenFOAM-2.3.1/etc/bashrc WM_NCOMPPROCS=4 WM_MPLIB=SYSTEMOPENMPI
 # ENTRYPOINT ["/bin/bash", "./entrypoint"] 
    
-   echo "alias of231='source \$HOME/OpenFOAM/OpenFOAM-2.3.1/etc/bashrc WM_NCOMPPROCS=4 WM_MPLIB=SYSTEMOPENMPI'" >> $HOME/.bashrc
- 
+RUN echo "alias of231='source \$HOME/OpenFOAM/OpenFOAM-2.3.1/etc/bashrc WM_NCOMPPROCS=4 WM_MPLIB=SYSTEMOPENMPI'" >> $HOME/.bashrc
+
 #THIRD_PARTY
-RUN of231 && \
+RUN echo "#!/bin/bash\nsource /root/OpenFOAM/OpenFOAM-2.3.1/etc/bashrc" > /usr/bin/ofoam231 && \
+   chmod +x /usr/bin/ofoam231 && \
+   echo $WM_THIRD_PARTY_DIR && \
    cd $WM_THIRD_PARTY_DIR && \
    export QT_SELECT=qt4  && \
    echo $(ls -1)  && \
@@ -35,18 +33,23 @@ RUN of231 && \
    ./Allwmake > log.make 2>&1  && \
    wmSET $FOAM_SETTINGS 
 # not building ParaView 4.1.0
+
+COPY of231_compile.sh /
+RUN chmod +x /of231_compile.sh && /of231_compile.sh
+
+# --------
 RUN of231
-   cd $WM_PROJECT_DIR  && \
-   find src applications -name "*.L" -type f | xargs sed -i -e 's=\(YY\_FLEX\_SUBMINOR\_VERSION\)=YY_FLEX_MINOR_VERSION < 6 \&\& \1= ' && \
+    cd $WM_PROJECT_DIR  && \
+    find src applications -name "*.L" -type f | xargs sed -i -e 's=\(YY\_FLEX\_SUBMINOR\_VERSION\)=YY_FLEX_MINOR_VERSION < 6 \&\& \1= ' && \
 # building OF 2.3.1
    cd $WM_PROJECT_DIR  && \
    export QT_SELECT=qt4  && \
    ./Allwmake > log.make 2>&1  && \
    ./Allwmake -j 4 2>&1 > log.make  && \
-RUN of231
-    echo "SUCCESS OF 2.3.1"  && \
- 
+   echo "SUCCESS OF 2.3.1"  && \
+
 # check OFoam install works
-   echo icoFoam -help
- 
+RUN of231
+    echo icoFoam -help
+
 #ENTRYPOINT ["/bin/bash", "./entrypoint"]
